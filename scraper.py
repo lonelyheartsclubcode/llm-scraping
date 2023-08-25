@@ -2,13 +2,17 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import os
 import openai
 import PyPDF2
 import requests
 
-openai.organization = "org-d0FCoCbqDiKfYkfW83dPvUpP"
-openai.api_key = os.getenv("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")
+openai.organization = os.getenv("ORG_KEY")
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def analyze_content_with_gpt4(text):
     # Define the prompt, incorporating the text from the PDF

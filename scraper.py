@@ -19,7 +19,7 @@ def analyze_content_with_gpt4(text):
     prompt = f"Does the following text discuss biodiversity? Text: {text}"
 
     # Query GPT-4
-    response = openai.Completion.create(model="gpt-4", prompt=prompt)
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": f"Does the following text discuss biodiversity? Text: {text}"}])
 
     # Analyze the response
     # You might want to customize this part depending on how you've structured the prompt
@@ -36,16 +36,20 @@ def download_page(driver, url):
     return BeautifulSoup(driver.page_source, 'html.parser')
 
 def download_and_extract_pdf_text(url):
-    response = requests.get(url)
-    with open('temp.pdf', 'wb') as f:
-        f.write(response.content)
-    
-    with open('temp.pdf', 'rb') as f:
-        reader = PyPDF2.PdfReader(f)
-        text = ' '.join([page.extract_text() for page in reader.pages])
-    
-    os.remove('temp.pdf')
-    return text
+    try: 
+        response = requests.get(url)
+        with open('temp.pdf', 'wb') as f:
+            f.write(response.content)
+        
+        with open('temp.pdf', 'rb') as f:
+            reader = PyPDF2.PdfReader(f)
+            text = ' '.join([page.extract_text() for page in reader.pages])
+        
+        os.remove('temp.pdf')
+        return text
+    except PyPDF2.errors.PdfReadError:
+        print(f"Error reading PDF from {url}")
+        return None
 
 def download_pdfs(soup, base_url, download_dir):
     for link in soup.find_all('a'):

@@ -16,10 +16,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def analyze_content_with_gpt4(text):
     # Define the prompt, incorporating the text from the PDF
-    prompt = f"Does the following text discuss the topic of interest? Text: {text}"
+    prompt = f"Does the following text discuss biodiversity? Text: {text}"
 
     # Query GPT-4
-    response = openai.Completion.create(model="gpt-4.0-turbo", prompt=prompt)
+    response = openai.Completion.create(model="gpt-4", prompt=prompt)
 
     # Analyze the response
     # You might want to customize this part depending on how you've structured the prompt
@@ -84,7 +84,7 @@ driver = webdriver.Chrome(service=webdriver_service)
 base_url = 'https://www.chevron.com/annual-report'
 
 # replace with your desired download directory
-download_dir = '/Users/mikaadlin/web_scraper_project/downloads'
+download_dir = os.getenv('DIR_PATH')
 
 soup = download_page(driver, base_url)
 scrape_text(soup)

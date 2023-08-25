@@ -14,6 +14,19 @@ import requests
 openai.organization = os.getenv("ORG_KEY")
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+def analyze_large_text(text):
+    max_tokens = 4000  # Keep it less than 4097 to account for extra tokens in the prompt
+    segments = [text[i:i + max_tokens] for i in range(0, len(text), max_tokens)]
+    is_relevant = False
+
+    for segment in segments:
+        analysis_result = analyze_content_with_gpt4(segment)
+        if analysis_result:  # If any segment is relevant, the whole text is marked as relevant
+            is_relevant = True
+            break
+
+    return is_relevant
+
 def analyze_content_with_gpt4(text):
     # Define the prompt, incorporating the text from the PDF
     prompt = f"Does the following text discuss biodiversity? Text: {text}"
@@ -23,7 +36,7 @@ def analyze_content_with_gpt4(text):
 
     # Analyze the response
     # You might want to customize this part depending on how you've structured the prompt
-    analysis_result = response.choices[0].text
+    analysis_result = response.choices[0].message['content']
 
     # Define the logic to determine if the PDF is relevant
     # This might be as simple as checking if the response is 'yes' or 'no'
@@ -43,7 +56,7 @@ def download_and_extract_pdf_text(url):
         
         with open('temp.pdf', 'rb') as f:
             reader = PyPDF2.PdfReader(f)
-            text = ' '.join([page.extract_text() for page in reader.pages])
+            text = ' '.join([page.extract_text() for page in reader.pages if page.extract_text().strip()])
         
         os.remove('temp.pdf')
         return text
@@ -57,7 +70,7 @@ def download_pdfs(soup, base_url, download_dir):
         if url.endswith('.pdf'):
             full_url = base_url + url
             text_sample = download_and_extract_pdf_text(full_url)
-            analysis_result = analyze_content_with_gpt4(text_sample)
+            analysis_result = analyze_large_text(text_sample)
             if analysis_result:
                 download_file(full_url, download_dir)
 
